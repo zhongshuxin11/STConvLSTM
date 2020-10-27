@@ -1,5 +1,3 @@
-__author__ = 'shuxin'
-
 import os
 import sys
 import shutil
@@ -13,7 +11,6 @@ mpl.use('Agg')
 
 import matplotlib.pyplot as plt
 
-from data_provider import datasets_factory
 from models.model_factory import Model
 from utils import preprocess, logger
 import trainer_loader as trainer
