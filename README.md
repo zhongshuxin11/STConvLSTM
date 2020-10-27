@@ -12,4 +12,5 @@ We conduct experiments on two datasets: Moving-MNIST and regional radar echo dat
 
 # Trainging
 Use the run.py script to train the model.
-`<python run.py>`
+
+`python run.py`
