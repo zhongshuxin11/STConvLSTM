@@ -1,9 +1,6 @@
-__author__ = 'shuxin'
-
 import numpy as np
 import torch
 import torch.nn as nn
-from layers.GCCell import GlobalContextBlock as GC
 from layers.SpatialBlock import SpatialBlock
 
 
