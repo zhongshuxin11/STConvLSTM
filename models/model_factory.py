@@ -13,7 +13,6 @@ class Model(object):
         self.num_layers = len(self.num_hidden)
 
         networks_map = {
-            'convlstm': convlstm.RNN,
             'stconvlstm': stconvlstm.RNN
         }
 
