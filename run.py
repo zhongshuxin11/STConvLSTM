@@ -8,9 +8,7 @@ import torch
 import logging
 import matplotlib as mpl
 mpl.use('Agg')
-
 import matplotlib.pyplot as plt
-
 from models.model_factory import Model
 from utils import preprocess, logger
 import trainer_loader as trainer
@@ -55,7 +53,9 @@ parser.add_argument('--patch_size', type=int, default=4)
 parser.add_argument('--layer_norm', type=int, default=1)
 # add SpatiolBlock's parse
 parser.add_argument('--sp_fusion', type=str, default='channel_add')
-parser.add_argument('--sp_tln', type=int, default=0)  
+parser.add_argument('--sp_tln', type=int, default=0)
+# loss function
+parser.add_argument('--criterion', type=str, default='MSE')
 
 # scheduled sampling
 parser.add_argument('--scheduled_sampling', type=int, default=1)
@@ -68,7 +68,7 @@ parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--adjust_interval', type=int, default=8)
 parser.add_argument('--adjust_rate', type=float, default=0.5)
 parser.add_argument('--reverse_input', type=int, default=1)
-parser.add_argument('--batch_size', type=int, default=8)
+parser.add_argument('--batch_size', type=int, default=2)
 # shuxin have to revised, change point
 parser.add_argument('--max_epoch', type=int, default=60)
 parser.add_argument('--display_interval', type=int, default=100)
@@ -151,17 +151,8 @@ def train_wrapper(model):
 
     # scheduled sampling setting
     eta = args.sampling_start_value
-    """
-    real_input_flag = np.zeros(
-        (args.batch_size,
-         args.total_length - args.input_length - 1,
-         args.img_width // args.patch_size,
-         args.img_width // args.patch_size,
-         args.patch_size ** 2 * args.img_channel), dtype=np.float32)
-    """
-    # real_input_flag = torch.FloatTensor(real_input_flag).to(args.device)
 
-    ### save traning loss and test loss
+    # save traning loss and test loss
     train_loss = []
     test_loss = []
     test_ssim = []
@@ -194,6 +185,8 @@ def train_wrapper(model):
                     epoch, ind, lr=model.optimizer.param_groups[-1]['lr'], loss=losses))
 
             torch.cuda.empty_cache()
+
+            avg_mse, ssim, psnr, fmae, sharp = trainer.test(model, test_loaders, args, epoch)
 
         # plot figure to observe the losses
         x = range(len(train_loss))
@@ -277,23 +270,10 @@ if not os.path.exists(args.loss_dir):
 
 if not os.path.exists(args.print_path):
     os.makedirs(args.print_path)
-# log
-"""
-log_dir = args.loss_dir + "train.log"
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
-"""
 
-# gpu_list = np.asarray(os.environ.get('CUDA_VISIBLE_DEVICES', '-1').split(','), dtype=np.int32)
-# args.n_gpu = len(gpu_list)
 print('Initializing models')
 
 model = Model(args)
-"""
-if torch.cuda.device_count() > 1:
-    model = nn.DataParallel(model)
-model = model.to(args.device)
-"""
 
 if args.is_training:
     train_wrapper(model)
