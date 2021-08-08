@@ -19,14 +19,13 @@ class STLSTMCell(nn.Module):
             forget_bias: float, The bias added to forget gates.
             layer_norm: whether to apply tensor layer normalization
         """
-
         self.num_hidden = num_hidden
         self.filter_size = filter_size
         self.padding = filter_size // 2
         self._forget_bias = forget_bias
         # spatial block
         self.spatialBlock = SpatialBlock(num_hidden, width, sp_fusion, sp_tln)
-        
+
         if layer_norm:
             self.conv_x = nn.Sequential(
                 nn.Conv2d(in_channel, num_hidden * 4, kernel_size=filter_size, stride=stride, padding=self.padding),
@@ -46,7 +45,6 @@ class STLSTMCell(nn.Module):
             )
             self.conv_last = nn.Conv2d(num_hidden * 2, num_hidden, kernel_size=1, stride=1, padding=0)
         else:
-            # nn.Conv2d: in_channels, out_channels, kernel_size, stride, padding
             self.conv_x = nn.Conv2d(in_channel, num_hidden * 4, kernel_size=filter_size,
                                     stride=stride, padding=self.padding)
 
@@ -60,7 +58,6 @@ class STLSTMCell(nn.Module):
                                     stride=stride, padding=self.padding)
 
             self.conv_last = nn.Conv2d(num_hidden * 2, num_hidden, kernel_size=1, stride=1, padding=0)
-
 
     def forward(self, x_t, h_t, c_t, m_t):
         x_concat = self.conv_x(x_t).cuda()
@@ -84,8 +81,7 @@ class STLSTMCell(nn.Module):
         c_m_concat = self.conv_o(mem).cuda()
         o_c, o_m = torch.split(c_m_concat, self.num_hidden, dim=1)
 
-        o_t = torch.tanh(o_x + o_h + o_c + o_m)  # on paper that is no o_h
+        o_t = torch.tanh(o_x + o_h + o_c + o_m)
         h_new = o_t * torch.tanh(self.conv_last(mem))
 
         return h_new, c_new, m_new
-

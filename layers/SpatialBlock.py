@@ -20,14 +20,7 @@ class SpatialBlock(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
         # transform
-        if tln:
-            self.trans = nn.Sequential(
-                nn.Conv2d(self.in_channels, self.planes, kernel_size=1),
-                nn.LayerNorm([self.planes, self.width, self.width]),
-                nn.ReLU(inplace=True),  # yapf: disable
-                nn.Conv2d(self.planes, self.in_channels, kernel_size=1))
-        else:
-            self.trans = nn.Conv2d(self.in_channels, self.in_channels, kernel_size=1)
+        self.trans = nn.Conv2d(self.in_channels, self.in_channels, kernel_size=1)
 
     def forward(self, x_t, c_t, m_t):
         if self.fusion_types == 'channel_add':
